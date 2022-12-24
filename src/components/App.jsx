@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { Searchbar } from './Searchbar/Searchbar';
 import { getFetch } from './Api';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
-import { Button } from './Button/Button';
-import { Loader } from './Loader/Loader';
-import Modal from './Modal/Modal';
+// import { Button } from './Button/Button';
+// import { Loader } from './Loader/Loader';
+// import Modal from './Modal/Modal';
 
 export const App = () => {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [response, setResponse] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [url, setUrl] = useState('');
-  const [tags, setTags] = useState('');
+  // const [showModal, setShowModal] = useState(false);
+  // const [url, setUrl] = useState('');
+  // const [tags, setTags] = useState('');
 
   const handleQueryForm = newValue => {
     console.log(newValue);
@@ -34,11 +36,19 @@ export const App = () => {
     async function getNewFetch() {
       try {
         const newImages = await getFetch(query, page);
-        console.log(newImages);
-      } catch {}
+        console.log(newImages.length);
+        if (newImages.length === 0) {
+          toast.error('No images find', { autoClose: 5000 });
+          return;
+        }
+        setResponse(prevResponse => [...prevResponse, ...newImages]);
+      } catch (error) {
+        console.log(error);
+      }
     }
+
     getNewFetch();
-  });
+  }, [query, page]);
 
   return (
     <>
@@ -52,14 +62,15 @@ export const App = () => {
                 originalUrl={largeImageURL}
                 url={webformatURL}
                 alt={tags}
-                onClick={this.onClickModal}
+                // onClick={this.onClickModal}
               />
             );
           })}
       </ImageGallery>
-      {isLoading && <Loader />}
-      {response.length > 0 && <Button onLoad={this.loadMore} />}
-      {showModal && <Modal onClose={this.closeModal} url={url} alt={tags} />}
+      <ToastContainer />
+      {/* {isLoading && <Loader />} */}
+      {/* {response.length > 0 && <Button onLoad={this.loadMore} />} */}
+      {/* {showModal && <Modal onClose={this.closeModal} url={url} alt={tags} />} */}
     </>
   );
 };
