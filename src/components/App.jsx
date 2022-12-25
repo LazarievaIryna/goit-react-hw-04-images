@@ -6,18 +6,18 @@ import { Searchbar } from './Searchbar/Searchbar';
 import { getFetch } from './Api';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
-// import { Button } from './Button/Button';
-// import { Loader } from './Loader/Loader';
-// import Modal from './Modal/Modal';
+import { Button } from './Button/Button';
+import { Loader } from './Loader/Loader';
+import Modal from './Modal/Modal';
 
 export const App = () => {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [response, setResponse] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  // const [showModal, setShowModal] = useState(false);
-  // const [url, setUrl] = useState('');
-  // const [tags, setTags] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [url, setUrl] = useState('');
+  const [tags, setTags] = useState('');
 
   const handleQueryForm = newValue => {
     console.log(newValue);
@@ -35,6 +35,7 @@ export const App = () => {
     }
     async function getNewFetch() {
       try {
+        setIsLoading(true);
         const newImages = await getFetch(query, page);
         console.log(newImages.length);
         if (newImages.length === 0) {
@@ -42,13 +43,27 @@ export const App = () => {
           return;
         }
         setResponse(prevResponse => [...prevResponse, ...newImages]);
+        setIsLoading(false);
       } catch (error) {
         console.log(error);
+      } finally {
+        setIsLoading(false);
       }
     }
 
     getNewFetch();
   }, [query, page]);
+
+  const onClickModal = (url, alt) => {
+    setShowModal(true);
+    setUrl(url);
+    setTags(alt);
+
+    // this.setState({ showModal: true, url: url, tags: alt });
+  };
+  const closeModal = () => {
+    setShowModal(false);
+  };
 
   return (
     <>
@@ -62,15 +77,17 @@ export const App = () => {
                 originalUrl={largeImageURL}
                 url={webformatURL}
                 alt={tags}
-                // onClick={this.onClickModal}
+                onClick={onClickModal}
               />
             );
           })}
       </ImageGallery>
       <ToastContainer />
-      {/* {isLoading && <Loader />} */}
-      {/* {response.length > 0 && <Button onLoad={this.loadMore} />} */}
-      {/* {showModal && <Modal onClose={this.closeModal} url={url} alt={tags} />} */}
+      {isLoading && <Loader />}
+      {response.length > 0 && (
+        <Button onLoad={() => setPage(prevPage => prevPage + 1)} />
+      )}
+      {showModal && <Modal onClose={closeModal} url={url} alt={tags} />}
     </>
   );
 };
@@ -114,9 +131,9 @@ export const App = () => {
 //   closeModal = () => {
 //     this.setState({ showModal: false });
 //   };
-//   onClickModal = (url, alt) => {
-//     this.setState({ showModal: true, url: url, tags: alt });
-//   };
+// onClickModal = (url, alt) => {
+//   this.setState({ showModal: true, url: url, tags: alt });
+// };
 
 //   render() {
 //     console.log(this.state);
