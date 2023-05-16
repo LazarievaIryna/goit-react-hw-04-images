@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+// import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { Searchbar } from './Searchbar/Searchbar';
 import { getFetch } from './Api';
 import { ImageGallery } from './ImageGallery/ImageGallery';
-import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
+// import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
@@ -18,147 +18,84 @@ export const App = () => {
   const [showModal, setShowModal] = useState(false);
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState('');
+  const [error, setError] = useState(false);
+  const [isEmpty, setEmpty] = useState(false);
+  const [total, setTotal] = useState(1);
 
   const handleQueryForm = newValue => {
-    console.log(newValue);
-    if (query === newValue) {
-      return;
+    if (query !== newValue) {
+      setResponse([]);
+      setQuery(newValue);
+      setPage(1);
+      
+     
     }
-    setResponse([]);
-    setQuery(newValue);
-    setPage(1);
+    
+    setQuery(newValue)
   };
-
-  useEffect(() => {
+  useEffect(()=>{
     if (query === '') {
-      return;
-    }
-    async function getNewFetch() {
-      try {
-        setIsLoading(true);
-        const newImages = await getFetch(query, page);
-        console.log(newImages.length);
-        if (newImages.length === 0) {
-          toast.error('No images find', { autoClose: 5000 });
-          return;
+           return;
+         }
+         async function getRequest(){
+          setIsLoading(true)
+          try{
+            const response = await getFetch(query, page)
+            const newImages = response.hits;
+            const totalHits = response.totalHits;
+            if(totalHits === 0){
+              setEmpty(true)
+              setIsLoading(true)
+              return
+            }
+            
+            setResponse(prevResponse=>[...prevResponse, ...newImages]);
+            setEmpty(false);
+            setTotal(totalHits)
+          }
+          catch(error){
+            
+            setError(true)
+          }
+          finally{
+            
+            setIsLoading(false)
+          }
         }
-        setResponse(prevResponse => [...prevResponse, ...newImages]);
-        setIsLoading(false);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+        getRequest()
+    }, [query, page])
 
-    getNewFetch();
-  }, [query, page]);
-
+  
   const onClickModal = (url, alt) => {
     setShowModal(true);
     setUrl(url);
     setTags(alt);
 
-    // this.setState({ showModal: true, url: url, tags: alt });
+  
   };
   const closeModal = () => {
     setShowModal(false);
   };
-
-  return (
-    <>
-      <Searchbar onSubmit={handleQueryForm} />
-      <ImageGallery>
-        {response &&
-          response.map(({ id, webformatURL, largeImageURL, tags }) => {
-            return (
-              <ImageGalleryItem
-                key={id}
-                originalUrl={largeImageURL}
-                url={webformatURL}
-                alt={tags}
-                onClick={onClickModal}
-              />
-            );
-          })}
-      </ImageGallery>
-      <ToastContainer />
-      {isLoading && <Loader />}
-      {response.length > 0 && (
-        <Button onLoad={() => setPage(prevPage => prevPage + 1)} />
-      )}
-      {showModal && <Modal onClose={closeModal} url={url} alt={tags} />}
-    </>
+  return (<>
+    <Searchbar onSubmit={handleQueryForm} />
+        {!isLoading && isEmpty && <p className='No-image'>No image</p>}
+        {error && <p className="Error-message">
+No images for your request</p>}
+        {response.length >0 && <ImageGallery images={response} onClick={onClickModal}/>}
+        {isLoading && <Loader />}
+        {!isLoading && total/12 > page && <Button onLoad={() => setPage(prevPage => prevPage + 1)} />}
+        {showModal && <Modal onClose={closeModal} url={url} alt={tags} />}
+      </>
+    
   );
-};
+  }
 
-// export class App extends Component {
-//   state = {
-//     query: '',
-//     page: 1,
-//     response: [],
-//     isLoading: false,
-//     showModal: false,
-//     url: '',
-//     tags: '',
-//   };
-// async componentDidUpdate(prevProps, prevState) {
-//   const { query, page } = this.state;
-//   if (prevState.query !== query || prevState.page !== page) {
-//     this.setState({ isLoading: true });
-//     const newFetch = await getFetch(query, page);
-//     console.log(newFetch);
-//     this.setState(prevState => {
-//       return {
-//         response: [...prevState.response, ...newFetch],
-//       };
-//     });
-//     this.setState({ isLoading: false });
-//   }
-// }
+  
 
-//   handleQueryForm = newValue => {
-//     if (this.state.query !== newValue) {
-//       this.setState({ response: [], query: newValue, page: 1 });
-//     }
-//     this.setState({ query: newValue });
-//     console.log(newValue);
-//   };
 
-//   loadMore = () => {
-//     this.setState(prevState => ({ page: prevState.page + 1 }));
-//   };
-//   closeModal = () => {
-//     this.setState({ showModal: false });
-//   };
-// onClickModal = (url, alt) => {
-//   this.setState({ showModal: true, url: url, tags: alt });
-// };
+  
 
-//   render() {
-//     console.log(this.state);
-//     const { response, isLoading, showModal, url, tags } = this.state;
-//     return (
-//       <>
-//         <Searchbar onSubmit={this.handleQueryForm} />
-//         <ImageGallery>
-//           {response &&
-//             response.map(({ id, webformatURL, largeImageURL, tags }) => {
-//               return (
-//                 <ImageGalleryItem
-//                   key={id}
-//                   originalUrl={largeImageURL}
-//                   url={webformatURL}
-//                   alt={tags}
-//                   onClick={this.onClickModal}
-//                 />
-//               );
-//             })}
-//         </ImageGallery>
-//         {isLoading && <Loader />}
-//         {response.length > 0 && <Button onLoad={this.loadMore} />}
-//         {showModal && <Modal onClose={this.closeModal} url={url} alt={tags} />}
-//       </>
-//     );
-//   }
-// }
+  
+
+
+

@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 export const getFetch = async (request, page) => {
   const params = new URLSearchParams({
@@ -11,7 +12,7 @@ export const getFetch = async (request, page) => {
   const base_URL = `https://pixabay.com/api/?${params}`;
   try {
     const response = await axios.get(base_URL);
-    return response.data.hits;
+    return response.data;
     // console.log(response.data.hits);
   } catch (error) {
     return error;
