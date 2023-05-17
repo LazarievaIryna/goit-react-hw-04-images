@@ -13,7 +13,6 @@ export const getFetch = async (request, page) => {
   try {
     const response = await axios.get(base_URL);
     return response.data;
-    // console.log(response.data.hits);
   } catch (error) {
     return error;
   }

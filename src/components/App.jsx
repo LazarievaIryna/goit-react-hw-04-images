@@ -27,16 +27,12 @@ export const App = () => {
       setResponse([]);
       setQuery(newValue);
       setPage(1);
-      
-     
     }
     
     setQuery(newValue)
   };
   useEffect(()=>{
-    if (query === '') {
-           return;
-         }
+    
          async function getRequest(){
           setIsLoading(true)
           try{
@@ -62,7 +58,8 @@ export const App = () => {
             setIsLoading(false)
           }
         }
-        getRequest()
+        if(query)
+        {getRequest()}
     }, [query, page])
 
   

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'; 
 import  {ImageGalleryItem}  from "components/ImageGalleryItem/ImageGalleryItem";
 export const ImageGallery = ({ images, onClick }) => {
-  // console.log(images)
+
   return (
   <ul className="ImageGallery">
     {images.map(({ id, webformatURL, largeImageURL, tags }) => 
